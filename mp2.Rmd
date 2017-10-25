@@ -5,6 +5,7 @@ date: "October 31, 2017"
 output: html_document
 ---
 A new edit
+Edit number 2
 
 ## Loading the data
 
