@@ -32,6 +32,41 @@ individuals %>%
   filter(!is.na(occupation)) %>%
   group_by(occupation) %>% 
   summarize(num_occ = n()) %>% 
-  filter(num_occ > 29) %>% 
+  filter(num_occ > 10000) %>% 
+  mutate(occ_type = occupation) %>%
+  mutate(occ_type = case_when(
+    'RETIRED' = 'not working',
+    'ATTORNEY' = 'law',
+    'HOMEMAKER' = 'not working',
+    'PHYSICIAN' = 'healthcare',
+    'PRESIDENT' = 'executive',
+    'CONSULTANT' = 'business',
+    'OWNER' = 'business',
+    'CEO' = 'executive',
+    'PROFESSOR' = 'education',
+    'PARTNER' = 'other',
+    'LAWYER' = 'law',
+    'MANAGER' = 'business',
+    'NOT EMPLOYED' = 'not working',
+    'FARMER' = 'agriculture',
+    'VICE PRESIDENT' = 'executive',
+    'REAL ESTATE' = 'real estate',
+    'INVESTOR' = 'finance',
+    'NONE' = 'not working',
+    'SALES' = 'business',
+    'BUSINESS OWNER' = 'business',
+    'TEACHER' = 'education',
+    'DIRECTOR' = 'executive',
+    'SELF-EMPLOYED' = 'business',
+    'CHAIRMAN' = 'executive',
+    'WRITER' = 'other',
+    'CPA' = 'finance',
+    'BANKER' = 'finance',
+    'DENTIST' = 'healthcare',
+    'PRINCIPAL' = 'education',
+    'REAL ESTATE BROKER' = 'real estate',
+    'REALTOR' = 'real estate'
+    
+  ))
   arrange(desc(num_occ))
 ```
