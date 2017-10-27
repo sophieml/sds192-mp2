@@ -23,7 +23,8 @@ load("individuals.rda")
 ```{r}
 contributions %>% 
   group_by(state) %>% 
-  summarize(s = sum(transaction_amt))
+  summarize(s = sum(transaction_amt))%>%
+  arrange(desc(s))
 ```
 
 ```{r}
