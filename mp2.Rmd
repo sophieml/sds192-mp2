@@ -76,6 +76,8 @@ most_common_occupations <- individuals %>%
 
 ggplot(most_common_occupations, aes(x = occupation, y = num_occ, color = occ_type)) +
   geom_point() +
+  labs(x = "Occupation", y = "Amount Within Occupation Who Donated", title = "Donations From Different Occupations", color = "Occupations") +
+  ylim(0, 2e+05) +
   facet_wrap( ~ occ_type)
 ```
 
@@ -83,6 +85,8 @@ ggplot(most_common_occupations, aes(x = occupation, y = num_occ, color = occ_typ
 state_contributions <- individuals %>% 
   filter( individuals$state %in%candidates$cand_office_state) %>%
   group_by(state) %>% 
+  le_y_continuous(label = scales::dollar) +
+  scale_x_continuous(label = scales::dollar)
   summarize(med_amt = mean(abs(transaction_amt), na.rm = TRUE), max_amt = max(transaction_amt)) %>% 
   arrange(desc(med_amt))
 ```
@@ -90,5 +94,7 @@ state_contributions <- individuals %>%
 ```{r}
 state_data <- left_join(state_contributions, state_household_income)
 ggplot(state_data, aes(x = household_income, y = med_amt)) + 
-  geom_text(aes(label = state, size = max_amt), alpha = 0.5)
+  geom_text(aes(label = state, size = max_amt), alpha = 0.7) +
+  labs(x = "Household Income (USD)", y = "Median Amount Donated (USD)", title = "State Median Household Incomes and Donations") +
+  sca
 ```
