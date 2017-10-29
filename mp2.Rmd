@@ -17,6 +17,7 @@ load("candidates.rda")
 load("committees.rda")
 load("contributions.rda")
 load("individuals.rda")
+state_household_income <- read.csv("state_household_income.csv")
 
 ```
 
@@ -76,4 +77,12 @@ most_common_occupations <- individuals %>%
 ggplot(most_common_occupations, aes(x = occupation, y = num_occ, color = occ_type)) +
   geom_point() +
   facet_wrap( ~ occ_type)
+```
+
+```{r}
+state_contributions <- individuals %>% 
+  filter( individuals$state %in%candidates$cand_office_state) %>%
+  group_by(state) %>% 
+  summarize(med_amt = median(abs(transaction_amt), na.rm = TRUE)) %>% 
+  arrange(desc(med_amt))
 ```
