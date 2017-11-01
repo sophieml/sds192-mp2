@@ -1,87 +1,122 @@
 ---
 title: "Mini-Project 2"
-author: "Your Name Here"
+author: "Rocio Jaime and Sophie Li"
 date: "October 31, 2017"
 output: html_document
 ---
+
 A new edit
 Edit number 2
 
-## Loading the data
+##
 
-```{r, include=FALSE}
+```{r, message = FALSE, warning = FALSE, include=FALSE}
 library(tidyverse)
-
-load("house_elections.rda")
 load("candidates.rda")
-load("committees.rda")
-load("contributions.rda")
 load("individuals.rda")
+load("committees.rda")
+load("house_elections.rda")
 state_household_income <- read.csv("state_household_income.csv")
 
 ```
 
-```{r}
-contributions %>% 
-  group_by(state) %>% 
-  summarize(s = sum(transaction_amt))%>%
-  arrange(desc(s))
-```
+```{r, message = FALSE, warning = FALSE, echo=FALSE}
+set_occ_type <- function(data, occupations, type) {
+  data$occ_type[which(is.element(data$occ_type, occupations))] = type
+  return(data)
+}
 
-```{r}
-most_common_occupations <- individuals %>% 
-  filter(!is.na(occupation)) %>%
-  group_by(occupation) %>% 
-  summarize(num_occ = n()) %>% 
+most_common_occupations <- individuals %>%
+  group_by(occupation) %>%
+  summarize(num_occ = n()) %>%
   filter(num_occ > 10000) %>% 
-  mutate(occ_type = occupation) %>%
-  mutate(occ_type = case_when(
-    occ_type == 'RETIRED' ~ 'not working',
-    occ_type == 'ATTORNEY' ~ 'law',
-    occ_type == 'HOMEMAKER' ~ 'not working',
-    occ_type == 'PHYSICIAN' ~ 'healthcare',
-    occ_type == 'PRESIDENT' ~ 'executive',
-    occ_type == 'EXECUTIVE' ~ 'executive',
-    occ_type ==  'CONSULTANT' ~ 'business',
-    occ_type ==  'OWNER' ~ 'self employed',
-    occ_type ==  'CEO' ~ 'executive',
-    occ_type ==  'PROFESSOR' ~ 'education',
-    occ_type ==  'PARTNER' ~ 'other',
-    occ_type ==  'LAWYER' ~ 'law',
-    occ_type == 'ENGINEER' ~ 'scientist/engineer',
-    occ_type ==  'MANAGER' ~ 'business',
-    occ_type ==  'NOT EMPLOYED' ~ 'not working',
-    occ_type ==  'FARMER' ~ 'agriculture',
-    occ_type == 'VICE PRESIDENT' ~ 'executive',
-    occ_type == 'REAL ESTATE' ~ 'real estate',
-    occ_type == 'INVESTOR' ~ 'finance',
-    occ_type ==   'NONE' ~ 'not working',
-    occ_type ==  'SALES' ~ 'business',
-    occ_type == 'BUSINESS OWNER' ~ 'self employed',
-    occ_type == 'TEACHER' ~ 'education',
-    occ_type ==   'DIRECTOR' ~ 'executive',
-    occ_type ==  'SELF-EMPLOYED' ~ 'self employed',
-    occ_type ==  'CHAIRMAN' ~ 'executive',
-    occ_type ==  'WRITER' ~ 'other',
-    occ_type ==  'CPA' ~ 'finance',
-    occ_type ==  'BANKER' ~ 'finance',
-    occ_type ==  'DENTIST' ~ 'healthcare',
-    occ_type ==  'PRINCIPAL' ~ 'education',
-    occ_type ==  'REAL ESTATE BROKER' ~ 'real estate',
-    occ_type ==  'REALTOR' ~ 'real estate',
-    occ_type == TRUE ~ occ_type
-  )) %>% 
-  filter(!is.na(occ_type)) %>% 
+  mutate(occupation = tolower(occupation)) %>% 
+  mutate(occ_type = occupation) %>% 
+  set_occ_type(c('',
+                 'information requested per best efforts', 
+                 'information requested',
+                 'requested'), NA) %>% 
+  set_occ_type(c('retired', 
+                 'homemaker', 
+                 'not employed',
+                 'none'), 'not working') %>% 
+  set_occ_type(c('attorney',
+                 'lawyer'), 'law') %>% 
+  set_occ_type(c('physician',
+                 'dentist'),'healthcare') %>% 
+  set_occ_type(c('president',
+                 'executive',
+                 'ceo',
+                 'vice president',
+                 'chairman',
+                 'director'), 'executive') %>% 
+  set_occ_type(c('consultant',
+                 'manager',
+                 'sales'), 'business') %>%
+  set_occ_type(c('owner',
+                 'business owner', 
+                 'self-employed'), 'self employed') %>%
+  set_occ_type(c('professor', 
+                 'teacher',
+                 'principal'), 'education') %>% 
+  set_occ_type(c('real estate broker',
+                 'realtor'), 'real estate') %>% 
+  set_occ_type(c('banker',
+                 'investor',
+                 'cpa'), 'finance') %>% 
+  set_occ_type(c('partner',
+                 'writer',
+                 'farmer'), 'other') %>% 
+  filter(!is.na(occ_type)) %>%
   arrange(desc(num_occ))
-
-ggplot(most_common_occupations, aes(x = occupation, y = num_occ, color = occ_type)) +
-  geom_point() +
-  labs(x = "Occupation", y = "Amount Within Occupation Who Donated", title = "Donations From Different Occupations", color = "Occupations") +
-  ylim(0,150000) +
-  facet_wrap( ~ occ_type)
 ```
 
-```{r}
+```{r, message = FALSE, warning = FALSE, echo=FALSE}
+ggplot(most_common_occupations, aes(x = occ_type, y = num_occ, fill = occupation)) +
+  geom_col(position = 'stack') +
+  geom_text(aes(label = occupation), size = 2, position = 'stack', vjust = 1) +
+  labs(x = "Occupation", y = "Amount Within Occupation Who Donated", title = "Donations From Different Occupations", color = "Occupations") +
+  ylim(0, 600000) +
+  scale_x_discrete(labels = scales::wrap_format(0.5)) +
+  scale_y_continuous(label = scales::comma) +
+  theme(axis.text.x = element_text(size = 8),
+        legend.position="none")
+
+ggplot(most_common_occupations, aes(x = num_occ, y = occupation, fill = occ_type)) +
+  geom_segment(aes(x = 0, y = occupation, xend = num_occ, yend = occupation)) +
+  geom_point(aes(x = num_occ, y = occupation, color = occ_type), size = 2) +
+  geom_text(aes(x = num_occ + 60000, y = occupation, label = occupation), size = 2.5, hjust = 0) +
+  labs(y = "Occupation", x = "Amount Within Occupation Who Donated (in tens of thousands)", title = "Donations From Different Occupations", color = "Occupations") +
+  scale_y_discrete(labels = scales::wrap_format(0.5)) +
+  scale_x_continuous(labels = function(x)x / 10000, expand = c(0,0), limits = c(0, 800000)) +
+  facet_wrap(~ occ_type, scales = 'free') +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        legend.position="none",
+        panel.spacing.x = unit(20, 'pt'))
+```
+
+```{r, include=FALSE}
+state_contributions <- individuals %>% 
+  group_by(state) %>% 
+  summarize(mean_amt = mean(abs(transaction_amt), na.rm = TRUE), max_amt = max(transaction_amt)) %>% 
+  arrange(desc(mean_amt))
+```
+
+```{r, warning = FALSE, message=FALSE, echo=FALSE}
+state_data <- left_join(state_contributions, state_household_income, by = 'state') %>% 
+  filter(!is.na(household_income))
+
+ggplot(state_data, aes(x = household_income, y = mean_amt)) + 
+  geom_text(aes(label = state, size = max_amt), alpha = 0.7) +
+  labs(x = "Median Household Income (USD)", y = "Mean Amount Donated (USD)", title = "State Median Household Incomes and Donations", size = "Maximum Amount") + 
+  scale_y_continuous(label = scales::dollar) +
+  scale_x_continuous(label = scales::dollar) +
+  scale_size_continuous(labels = scales::comma)
+```
+
+
+```{r, include=FALSE, warning=FALSE}
 state_contributions <- individuals %>% 
   filter( individuals$state %in%candidates$cand_office_state) %>%
   group_by(state) %>% 
@@ -89,7 +124,7 @@ state_contributions <- individuals %>%
   arrange(desc(med_amt))
 ```
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 state_data <- left_join(state_contributions, state_household_income)
 
 ggplot(state_data, aes(x = household_income, y = med_amt)) + 
