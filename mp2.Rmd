@@ -5,10 +5,10 @@ date: "October 31, 2017"
 output: html_document
 ---
 
-A new edit
-Edit number 2
 
-##
+#Some Insight Into Individuals Who Donated to Campaigns
+
+Using the "individuals" data, we categorized indiviual donors by their careers to observe who was more likely to donate. In this first graph, we have a bar chart that indicates most donations were from indivuals who were not working at the time, mostly due to retirement.
 
 ```{r, message = FALSE, warning = FALSE, include=FALSE}
 library(tidyverse)
@@ -71,6 +71,8 @@ most_common_occupations <- individuals %>%
   arrange(desc(num_occ))
 ```
 
+
+
 ```{r, message = FALSE, warning = FALSE, echo=FALSE}
 ggplot(most_common_occupations, aes(x = occ_type, y = num_occ, fill = occupation)) +
   geom_col(position = 'stack') +
@@ -81,7 +83,11 @@ ggplot(most_common_occupations, aes(x = occ_type, y = num_occ, fill = occupation
   scale_y_continuous(label = scales::comma) +
   theme(axis.text.x = element_text(size = 8),
         legend.position="none")
+```
 
+
+Our next graph offers a more clear comparison of the different occupations within each career field. For clarification, the occupations in the data are not limited to those included in this graphic. Since this data was so large, we only included the specific occupations with more than 10,000 donors. This also helped avoid clutter.
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 ggplot(most_common_occupations, aes(x = num_occ, y = occupation, fill = occ_type)) +
   geom_segment(aes(x = 0, y = occupation, xend = num_occ, yend = occupation)) +
   geom_point(aes(x = num_occ, y = occupation, color = occ_type), size = 2) +
@@ -103,6 +109,9 @@ state_contributions <- individuals %>%
   arrange(desc(mean_amt))
 ```
 
+
+In this graphic we took the median income and mean amount donated for state to see if states with higher incomes donated more. We were expecting a strong linear correlation, so this graph was surprising. Although this graph is linear, the correlation is not has strong 
+as one may suspect.
 ```{r, warning = FALSE, message=FALSE, echo=FALSE}
 state_data <- left_join(state_contributions, state_household_income, by = 'state') %>% 
   filter(!is.na(household_income))
@@ -124,12 +133,3 @@ state_contributions <- individuals %>%
   arrange(desc(med_amt))
 ```
 
-```{r, echo=FALSE, warning=FALSE}
-state_data <- left_join(state_contributions, state_household_income)
-
-ggplot(state_data, aes(x = household_income, y = med_amt)) + 
-  geom_text(aes(label = state, size = max_amt), alpha = 0.7) +
-  labs(x = "Household Income (USD)", y = "Median Amount Donated (USD)", title = "State Median Household Incomes and Donations", size = "Maximum Amount") + 
-  scale_y_continuous(label = scales::dollar) +
-  scale_x_continuous(label = scales::dollar)
-```
