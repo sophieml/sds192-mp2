@@ -77,7 +77,6 @@ most_common_occupations <- individuals %>%
 ggplot(most_common_occupations, aes(x = occupation, y = num_occ, color = occ_type)) +
   geom_point() +
   labs(x = "Occupation", y = "Amount Within Occupation Who Donated", title = "Donations From Different Occupations", color = "Occupations") +
-  x_scale_continuous()
   ylim(0,150000) +
   facet_wrap( ~ occ_type)
 ```
